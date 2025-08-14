@@ -23,44 +23,37 @@
           <button class="ml-2 px-2 py-1 bg-blue-500 text-white rounded" @click="playWord(modal.card.english)"><i class="fas fa-volume-up"></i></button>
         </h2>
         <h3 class="text-lg mb-2 text-blue-600">{{ modal.card.spanish }}</h3>
+        <h4 class="font-semibold mb-2">Ejemplos:</h4>
         <div class="mb-4">
-          <span class="font-semibold">Definición:</span>
-          <span>{{ modal.card.definition }}</span>
-          <button class="ml-2 px-2 py-1 bg-blue-500 text-white rounded" @click="playDefinition(modal.card.definition)"><i class="fas fa-volume-up"></i></button>
+          <button v-if="speechSupported" @click="togglePractice" class="px-3 py-1 bg-green-500 text-white rounded mb-2">
+            <i class="fas fa-microphone mr-1"></i>{{ isPracticing ? 'Detener práctica' : 'Practicar ejemplos' }}
+          </button>
+          <span v-else class="text-red-500">Reconocimiento de voz no soportado</span>
         </div>
-        <div>
-          <h4 class="font-semibold mb-2">Ejemplos:</h4>
-          <div class="mb-4">
-            <button v-if="speechSupported" @click="togglePractice" class="px-3 py-1 bg-green-500 text-white rounded mb-2">
-              <i class="fas fa-microphone mr-1"></i>{{ isPracticing ? 'Detener práctica' : 'Practicar ejemplos' }}
+        <div v-for="(ex, key) in modal.card.examples" :key="key" class="mb-2">
+          <div class="flex items-center gap-2">
+            <span
+              v-if="isPracticing"
+              :class="getExampleClass(key)"
+            >{{ ex }}</span>
+            <span
+              v-else
+              @click="playExample(ex)"
+              class="cursor-pointer text-blue-700 hover:underline"
+            >{{ ex }}</span>
+            <button
+              class="px-2 py-1 rounded focus:outline-none"
+              :class="{'bg-blue-700': examplePronouncing === key, 'bg-blue-500': examplePronouncing !== key, 'text-white': true}"
+              @click="handleExamplePronunciationClick(key, ex, modal.card.examples[key + '_pronunciation_es_lat'])"
+            >
+              <i class="fas fa-volume-up"></i>
             </button>
-            <span v-else class="text-red-500">Reconocimiento de voz no soportado</span>
+            <span v-if="modal.card.examples[key + '_pronunciation_es_lat']" class="ml-2 text-gray-500">/{{ modal.card.examples[key + '_pronunciation_es_lat'] }}/</span>
           </div>
-          <div v-for="(ex, key) in modal.card.examples" :key="key" class="mb-2">
-            <div class="flex items-center gap-2">
-              <span
-                v-if="isPracticing"
-                :class="getExampleClass(key)"
-              >{{ ex }}</span>
-              <span
-                v-else
-                @click="playExample(ex)"
-                class="cursor-pointer text-blue-700 hover:underline"
-              >{{ ex }}</span>
-                <button
-                  class="px-2 py-1 rounded focus:outline-none"
-                  :class="{'bg-blue-700': examplePronouncing === key, 'bg-blue-500': examplePronouncing !== key, 'text-white': true}"
-                  @click="handleExamplePronunciationClick(key, ex, modal.card.examples[key + '_pronunciation_es_lat'])"
-                >
-                  <i class="fas fa-volume-up"></i>
-                </button>
-              <span v-if="modal.card.examples[key + '_pronunciation_es_lat']" class="ml-2 text-gray-500">/{{ modal.card.examples[key + '_pronunciation_es_lat'] }}/</span>
-            </div>
-          </div>
-          <div v-if="isPracticing" class="mt-2">
-            <span v-if="isListening" class="text-green-600">Escuchando...</span>
-            <span v-else class="text-gray-500">Haz clic en "Practicar ejemplos" y pronuncia el ejemplo resaltado.</span>
-          </div>
+        </div>
+        <div v-if="isPracticing" class="mt-2">
+          <span v-if="isListening" class="text-green-600">Escuchando...</span>
+          <span v-else class="text-gray-500">Haz clic en "Practicar ejemplos" y pronuncia el ejemplo resaltado.</span>
         </div>
       </div>
     </div>
@@ -83,12 +76,12 @@ export default {
       isListening: false,
       currentExampleIndex: 0,
       exampleStates: [],
-      recognition: null
-    , examplePronouncing: null
+      recognition: null,
+      examplePronouncing: null
     }
   },
   mounted() {
-    fetch('/ingles/flashcards_vue.json')
+    fetch('/flashcards_vue.json')
       .then(res => res.json())
       .then(data => {
         this.cards = data;
@@ -110,6 +103,60 @@ export default {
       this.speechSupported = false;
     }
   },
+  methods: {
+    groupByLetter(cards) {
+      const groups = {};
+      cards.forEach(card => {
+        const letter = card.english[0].toLowerCase();
+        if (!groups[letter]) groups[letter] = [];
+        groups[letter].push(card);
+      });
+      return Object.keys(groups).sort().map(letter => ({ letter, cards: groups[letter] }));
+    },
+    openModal(card) {
+      this.modal.visible = true;
+      this.modal.card = card;
+    },
+    closeModal() {
+      this.modal.visible = false;
+      this.modal.card = null;
+    },
+    playWord(word) {
+      const utter = new window.SpeechSynthesisUtterance(word);
+      this.synth.speak(utter);
+    },
+    playDefinition(def) {
+      const utter = new window.SpeechSynthesisUtterance(def);
+      this.synth.speak(utter);
+    },
+    playExample(ex) {
+      const utter = new window.SpeechSynthesisUtterance(ex);
+      utter.lang = 'en-US';
+      utter.rate = 1;
+      this.synth.speak(utter);
+    },
+    playExamplePronunciation(ex, ipa) {
+      // Si hay IPA, usa el texto del ejemplo pero con voz en inglés y velocidad normal
+      const utter = new window.SpeechSynthesisUtterance(ex);
+      utter.lang = 'en-US';
+      utter.rate = 1;
+      // No se puede reproducir IPA directamente, pero se puede mostrar en el tooltip
+      this.synth.speak(utter);
+    },
+    handleExamplePronunciationClick(key, ex, ipa) {
+      this.examplePronouncing = key;
+      this.playExamplePronunciation(ex, ipa);
+      // Reset visual feedback after speech ends
+      const onEnd = () => {
+        this.examplePronouncing = null;
+        utter.removeEventListener('end', onEnd);
+      };
+      const utter = new window.SpeechSynthesisUtterance(ex);
+      utter.lang = 'en-US';
+      utter.rate = 1;
+      utter.addEventListener('end', onEnd);
+      this.synth.speak(utter);
+    },
     togglePractice() {
       if (this.isPracticing) {
         this.stopPractice();
@@ -192,61 +239,7 @@ export default {
       if (this.isListening && this.isPracticing) {
         this.recognition.start();
       }
-    },
-  methods: {
-    groupByLetter(cards) {
-      const groups = {};
-      cards.forEach(card => {
-        const letter = card.english[0].toLowerCase();
-        if (!groups[letter]) groups[letter] = [];
-        groups[letter].push(card);
-      });
-      return Object.keys(groups).sort().map(letter => ({ letter, cards: groups[letter] }));
-    },
-    openModal(card) {
-      this.modal.visible = true;
-      this.modal.card = card;
-    },
-    closeModal() {
-      this.modal.visible = false;
-      this.modal.card = null;
-    },
-    playWord(word) {
-      const utter = new window.SpeechSynthesisUtterance(word);
-      this.synth.speak(utter);
-    },
-    playDefinition(def) {
-      const utter = new window.SpeechSynthesisUtterance(def);
-      this.synth.speak(utter);
-    },
-    playExample(ex) {
-      const utter = new window.SpeechSynthesisUtterance(ex);
-      utter.lang = 'en-US';
-      utter.rate = 1;
-      this.synth.speak(utter);
-    },
-    playExamplePronunciation(ex, ipa) {
-      // Si hay IPA, usa el texto del ejemplo pero con voz en inglés y velocidad normal
-      const utter = new window.SpeechSynthesisUtterance(ex);
-      utter.lang = 'en-US';
-      utter.rate = 1;
-      // No se puede reproducir IPA directamente, pero se puede mostrar en el tooltip
-      this.synth.speak(utter);
-    },
-      handleExamplePronunciationClick(key, ex, ipa) {
-        this.examplePronouncing = key;
-        this.playExamplePronunciation(ex, ipa);
-        // Reset visual feedback after speech ends
-        const onEnd = () => {
-          this.examplePronouncing = null;
-          utter.removeEventListener('end', onEnd);
-        };
-        const utter = new window.SpeechSynthesisUtterance(ex);
-        utter.lang = 'en-US';
-        utter.rate = 1;
-        utter.addEventListener('end', onEnd);
-        this.synth.speak(utter);
-      },
+    }
   }
 }
 </script>

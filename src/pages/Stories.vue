@@ -115,7 +115,7 @@ export default {
     }
   },
   mounted() {
-    fetch('/ingles/stories.json')
+  fetch('/stories.json')
       .then(res => res.json())
       .then(data => {
         this.stories = data.stories;
@@ -160,7 +160,6 @@ export default {
       this.currentStory.pronunciation.forEach(paragraph => {
         this.pronunciationStates.push(...paragraph.split(/(\s+)/).filter(w => w.trim()).map(() => 'normal'));
       });
-      // Primer highlight
       this.setHighlight();
     },
     setHighlight() {
