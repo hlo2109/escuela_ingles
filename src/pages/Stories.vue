@@ -115,7 +115,7 @@ export default {
     }
   },
   mounted() {
-    fetch('/stories.json')
+    fetch('/ingles/stories.json')
       .then(res => res.json())
       .then(data => {
         this.stories = data.stories;

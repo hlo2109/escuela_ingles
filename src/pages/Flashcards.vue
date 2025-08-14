@@ -88,7 +88,7 @@ export default {
     }
   },
   mounted() {
-    fetch('/flashcards_vue.json')
+    fetch('/ingles/flashcards_vue.json')
       .then(res => res.json())
       .then(data => {
         this.cards = data;

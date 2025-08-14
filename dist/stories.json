@@ -1,0 +1,186 @@
+{
+  "stories": [
+    {
+      "id": 0,
+      "title": "The Little Red Hen",
+      "english": [
+        "Once upon a time, there was a little red hen who lived on a farm.",
+        "She was friends with a lazy dog, a sleepy cat, and a noisy yellow duck.",
+        "One day, the little red hen found some seeds on the ground.",
+        "She had an idea! She could plant the seeds and grow wheat.",
+        "Then she could use the wheat to make bread.",
+        "She asked her friends, 'Who will help me plant these seeds?'",
+        "'Not I,' said the lazy dog.",
+        "'Not I,' said the sleepy cat.",
+        "'Not I,' said the noisy yellow duck.",
+        "'Then I will do it myself,' said the little red hen, and she did."
+      ],
+      "pronunciation": [
+        "uáns apón a táim, der uas a líttl red jen ju lívd on a farm.",
+        "shí uas frends uiz a léisi dog, a slípi cat, and a nóisi yélou dak.",
+        "uán dei, da líttl red jen fáund sam síids on da graund.",
+        "shí jad an aidía! shí cud plánt da síids and gróu uít.",
+        "den shí cud iús da uít tu meik bred.",
+        "shí askt jer frends, 'jú uíl jelp mi plánt díis síids?'",
+        "'not ái,' sed da léisi dog.",
+        "'not ái,' sed da slípi cat.",
+        "'not ái,' sed da nóisi yélou dak.",
+        "'den ái uíl du it mái-self,' sed da líttl red jen, and shí did."
+      ]
+    },
+    {
+      "id": 1,
+      "title": "The Brave Little Mouse",
+      "english": [
+        "Once upon a time, in a small village, there lived a tiny mouse.",
+        "He was brave and loved to explore new places.",
+        "One day, he heard a loud roar coming from the forest.",
+        "It was a lion caught in a hunter’s net.",
+        "The mouse ran to help and chewed the ropes until the lion was free.",
+        "The lion thanked the mouse and they became good friends."
+      ],
+      "pronunciation": [
+        "uáns apón a táim, in a smól vílej, der lívd a táini máus.",
+        "jí uas breiv and lovd tu eksplór niú pléisiz.",
+        "uán dei, jí jerd a laud rór cámin from da fórest.",
+        "it uas a láion cot in a jónters nét.",
+        "da máus ran tu jelp and chúud da róups until da láion uas frí.",
+        "da láion zánkt da máus and dei bicéim gúd frends."
+      ]
+    },
+    {
+      "id": 2,
+      "title": "The Kind Rabbit",
+      "english": [
+        "In a sunny meadow, there lived a kind rabbit.",
+        "He always shared his food with other animals.",
+        "One winter, food was very scarce.",
+        "The rabbit gave his last carrot to a hungry deer.",
+        "The deer was so grateful that he brought the rabbit fresh apples the next day."
+      ],
+      "pronunciation": [
+        "in a sóni mérou, der lívd a káind rábit.",
+        "jí ólueis shérd jis fud uiz óder ánimals.",
+        "uán uínter, fud uas véri skérs.",
+        "da rábit géiv jis last károt tu a jóngri díer.",
+        "da díer uas sóu gréitful dat jí brot da rábit fresh ápels da néxt dei."
+      ]
+    },
+    {
+      "id": 3,
+      "title": "The Lost Kitten",
+      "english": [
+        "A little kitten was lost in the big city.",
+        "She wandered through the streets looking for her home.",
+        "A kind baker found her and gave her warm milk.",
+        "The baker put up posters until the kitten’s owner came.",
+        "The kitten was happy to be back home."
+      ],
+      "pronunciation": [
+        "a líttl kíten uas lost in da big síri.",
+        "shí uánderd thru da stríts lúkin for jer jóum.",
+        "a káind béiker fáund jer and géiv jer uórm milk.",
+        "da béiker put ap pósters until da kítenz óuner kéim.",
+        "da kíten uas jápi tu bi bak jóum."
+      ]
+    },
+    {
+      "id": 4,
+      "title": "The Helpful Squirrel",
+      "english": [
+        "In the forest, a squirrel was gathering nuts for winter.",
+        "She saw a bird with a broken wing.",
+        "The squirrel built a small nest for the bird in her tree.",
+        "The bird rested until his wing was healed.",
+        "They became best friends and helped each other."
+      ],
+      "pronunciation": [
+        "in da fórest, a scuérrel uas gáderin nats for uínter.",
+        "shí sóu a berd uiz a bróuken uíng.",
+        "da scuérrel bílt a smól nést for da berd in jer trí.",
+        "da berd résted until jis uíng uas jíld.",
+        "dei bicéim best frends and jelpd ích óder."
+      ]
+    },
+    {
+      "id": 5,
+      "title": "The Little Blue Bird",
+      "english": [
+        "A little blue bird loved to sing every morning.",
+        "One day, she lost her voice.",
+        "Her friends brought her honey and warm tea.",
+        "After a week, her voice returned, and she sang again.",
+        "The forest was filled with her beautiful songs."
+      ],
+      "pronunciation": [
+        "a líttl blú berd lovd tu síng évri mórnin.",
+        "uán dei, shí lost jer vóis.",
+        "jer frends brot jer jóni and uórm tí.",
+        "áfter a uík, jer vóis ritérnd, and shí sang aguéin.",
+        "da fórest uas fíld uiz jer biútiful sóngs."
+      ]
+    },
+    {
+      "id": 6,
+      "title": "The Honest Woodcutter",
+      "english": [
+        "A woodcutter dropped his axe into the river.",
+        "A fairy appeared and offered him a golden axe.",
+        "The woodcutter refused and said it was not his.",
+        "The fairy rewarded his honesty with the golden axe and his old one."
+      ],
+      "pronunciation": [
+        "a údkorer dropt jis áx intu da ríver.",
+        "a féiri apíerd and óferd jim a gólden áx.",
+        "da údkorer rifíusd and sed it uas not jis.",
+        "da féiri riwórdéd jis ónesti uiz da gólden áx and jis óld uan."
+      ]
+    },
+    {
+      "id": 7,
+      "title": "The Ant and the Dove",
+      "english": [
+        "An ant was drinking water from a river.",
+        "She slipped and fell into the water.",
+        "A dove dropped a leaf to help her.",
+        "Later, the ant saved the dove from a hunter."
+      ],
+      "pronunciation": [
+        "an ant uas drínkin uóter from a ríver.",
+        "shí slípt and fel intu da uóter.",
+        "a dáuv dropt a líf tu jelp jer.",
+        "léiter, di ant séivd da dáuv from a jóntor."
+      ]
+    },
+    {
+      "id": 8,
+      "title": "The Fox and the Grapes",
+      "english": [
+        "A hungry fox saw some grapes hanging from a vine.",
+        "He jumped but could not reach them.",
+        "He walked away saying, 'They are probably sour.'"
+      ],
+      "pronunciation": [
+        "a jóngri foks sóu sam gréips jángin from a váin.",
+        "jí jómt bat cud not rích dem.",
+        "jí uokt awéi séyin, 'déi ar próbably sáuer.'"
+      ]
+    },
+    {
+      "id": 9,
+      "title": "The Wise Old Owl",
+      "english": [
+        "In a quiet forest, there lived a wise old owl.",
+        "He listened more than he spoke.",
+        "The animals came to him for advice.",
+        "He taught them to be kind and patient."
+      ],
+      "pronunciation": [
+        "in a kuáiet fórest, der lívd a uáis óld ául.",
+        "jí lísend mór dan jí spók.",
+        "di ánimals kéim tu jim for adváis.",
+        "jí tót dem tu bi káind and péishent."
+      ]
+    }
+  ]
+}
