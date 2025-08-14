@@ -25,36 +25,31 @@
         <h3 class="text-lg mb-2 text-blue-600">{{ modal.card.spanish }}</h3>
         <h4 class="font-semibold mb-2">Ejemplos:</h4>
         <div class="mb-4">
-          <button v-if="speechSupported" @click="togglePractice" class="px-3 py-1 bg-green-500 text-white rounded mb-2">
-            <i class="fas fa-microphone mr-1"></i>{{ isPracticing ? 'Detener práctica' : 'Practicar ejemplos' }}
-          </button>
-          <span v-else class="text-red-500">Reconocimiento de voz no soportado</span>
+          <span v-if="!speechSupported" class="text-red-500">Reconocimiento de voz no soportado</span>
         </div>
         <div v-for="(ex, key) in modal.card.examples" :key="key" class="mb-2">
           <div class="flex items-center gap-2">
+            <span>
+              <template v-for="(word, idx) in ex.split(/\s+/)" :key="idx">
+                <span :class="getExampleWordClass(key, idx)">{{ word }}</span><span> </span>
+              </template>
+            </span>
             <span
-              v-if="isPracticing"
-              :class="getExampleClass(key)"
-            >{{ ex }}</span>
-            <span
-              v-else
               @click="playExample(ex)"
               class="cursor-pointer text-blue-700 hover:underline"
-            >{{ ex }}</span>
+            >🔊</span>
             <button
-              class="px-2 py-1 rounded focus:outline-none"
-              :class="{'bg-blue-700': examplePronouncing === key, 'bg-blue-500': examplePronouncing !== key, 'text-white': true}"
-              @click="handleExamplePronunciationClick(key, ex, modal.card.examples[key + '_pronunciation_es_lat'])"
+              class="px-3 py-1 bg-green-500 text-white rounded"
+              @click="startPracticeExample(key)"
+              :disabled="!speechSupported"
             >
-              <i class="fas fa-volume-up"></i>
+              <i class="fas fa-microphone mr-1"></i> Practicar
             </button>
             <span v-if="modal.card.examples[key + '_pronunciation_es_lat']" class="ml-2 text-gray-500">/{{ modal.card.examples[key + '_pronunciation_es_lat'] }}/</span>
+            <span v-if="isListening && practicingKey === key" class="text-green-600 ml-2">Escuchando...</span>
           </div>
         </div>
-        <div v-if="isPracticing" class="mt-2">
-          <span v-if="isListening" class="text-green-600">Escuchando...</span>
-          <span v-else class="text-gray-500">Haz clic en "Practicar ejemplos" y pronuncia el ejemplo resaltado.</span>
-        </div>
+    <!-- Mensaje global eliminado, ahora cada ejemplo muestra su estado -->
       </div>
     </div>
   </div>
@@ -72,12 +67,12 @@ export default {
       },
       synth: null,
       speechSupported: true,
-      isPracticing: false,
-      isListening: false,
-      currentExampleIndex: 0,
-      exampleStates: [],
-      recognition: null,
-      examplePronouncing: null
+  isListening: false,
+  practicingKey: null,
+  exampleStates: {},
+    exampleProgress: {},
+  recognition: null,
+  examplePronouncing: null
     }
   },
   mounted() {
@@ -180,18 +175,39 @@ export default {
       this.recognition.stop();
       this.exampleStates = [];
     },
-    setExampleHighlight() {
-      this.exampleStates = this.exampleStates.map((state, idx) => {
-        if (state === 'correct' || state === 'incorrect') return state;
-        return idx === this.currentExampleIndex ? 'highlight' : 'normal';
-      });
-    },
-    getExampleClass(idx) {
-      const state = this.exampleStates[idx];
+    getExampleClass(key) {
+      const state = this.exampleStates[key];
       if (state === 'highlight') return 'word word-highlight';
       if (state === 'correct') return 'word word-correct';
       if (state === 'incorrect') return 'word word-incorrect';
       return 'word';
+    },
+    getExampleWordClass(key, idx) {
+      if (this.practicingKey === key && this.exampleProgress[key] !== undefined) {
+        if (idx < this.exampleProgress[key]) {
+          return 'word word-correct';
+        } else if (idx === this.exampleProgress[key]) {
+          return 'word word-highlight';
+        }
+      }
+      const state = this.exampleStates[key];
+      if (state === 'correct') return 'word word-correct';
+      if (state === 'incorrect') return 'word word-incorrect';
+      return 'word';
+    },
+    startPracticeExample(key) {
+      this.isListening = true;
+      this.practicingKey = key;
+    this.exampleStates = { ...this.exampleStates, [key]: null };
+    this.exampleProgress = { ...this.exampleProgress, [key]: 0 };
+      this.recognition.start();
+    },
+    stopPracticeExample() {
+      this.isListening = false;
+      this.exampleStates = {};
+    this.exampleProgress = {};
+      this.practicingKey = null;
+      this.recognition.stop();
     },
     norm(w) {
       return w.toLowerCase().replace(/[.,?!;:"'()]/g, "");
@@ -213,30 +229,50 @@ export default {
       return { advanced: idx - startIdx, consumed: j };
     },
     handleRecognitionResult(event) {
-      if (!this.isListening || !this.isPracticing) return;
-      const exampleKeys = Object.keys(this.modal.card.examples).filter(k => !k.includes('pronunciation'));
-      const allExamples = exampleKeys.map(k => this.modal.card.examples[k]);
-      const res = event.results[event.results.length - 1];
-      const text = res[0].transcript.trim().toLowerCase();
-      if (!text) return;
-      if (res.isFinal) {
-        const spokenWords = text.split(/\s+/).filter(Boolean);
-        if (this.currentExampleIndex < this.exampleStates.length) {
-          const { advanced } = this.consumeMatches(spokenWords, this.exampleStates, allExamples, this.currentExampleIndex);
-          if (advanced > 0) {
-            this.currentExampleIndex += advanced;
-          } else {
-            this.exampleStates[this.currentExampleIndex] = 'incorrect';
-          }
+      if (!this.isListening || !this.practicingKey) return;
+      const ex = this.modal.card.examples[this.practicingKey];
+      const targetWords = ex.split(/\s+/).filter(Boolean);
+      // Procesa resultados intermedios para seguimiento
+      let transcript = '';
+      for (let i = 0; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript + ' ';
+      }
+      transcript = transcript.trim().toLowerCase();
+      const spokenWords = transcript.split(/\s+/).filter(Boolean);
+      // Calcula el progreso
+      let progress = 0;
+      for (let i = 0; i < spokenWords.length && i < targetWords.length; i++) {
+        if (this.norm(spokenWords[i]) === this.norm(targetWords[i])) {
+          progress++;
+        } else {
+          break;
         }
-        this.setExampleHighlight();
+      }
+      this.exampleProgress = {
+        ...this.exampleProgress,
+        [this.practicingKey]: progress
+      };
+      // Si resultado final, evalúa correcto/incorrecto
+      if (event.results[event.results.length - 1].isFinal) {
+        let correct = progress === targetWords.length;
+        this.exampleStates = {
+          ...this.exampleStates,
+          [this.practicingKey]: correct ? 'correct' : 'incorrect'
+        };
+        this.isListening = false;
+        setTimeout(() => {
+          this.exampleStates = { ...this.exampleStates, [this.practicingKey]: null };
+          this.exampleProgress = { ...this.exampleProgress, [this.practicingKey]: 0 };
+          this.practicingKey = null;
+        }, 2000);
+        this.recognition.stop();
       }
     },
     handleRecognitionError(event) {
-      this.stopPractice();
+      this.stopPracticeExample();
     },
     handleRecognitionEnd() {
-      if (this.isListening && this.isPracticing) {
+      if (this.isListening && this.practicingKey) {
         this.recognition.start();
       }
     }
