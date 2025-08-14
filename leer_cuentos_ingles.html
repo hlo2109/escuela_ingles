@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Reader with Pronunciation Practice</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .word-highlight {
+            background-color: #fef08a;
+            transition: background-color 0.3s;
+        }
+        .word-correct {
+            background-color: #86efac;
+        }
+        .word-incorrect {
+            background-color: #fca5a5;
+        }
+        .pronunciation-highlight {
+            background-color: #bfdbfe;
+            transition: background-color 0.3s;
+        }
+        .pronunciation-correct {
+            background-color: #86efac;
+        }
+        .pronunciation-incorrect {
+            background-color: #fca5a5;
+        }
+        .tab-active {
+            border-bottom: 3px solid #3b82f6;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <h1 class="text-3xl font-bold text-center text-blue-600 mb-8">Story Reader with Pronunciation Practice</h1>
+        
+        <!-- Story Selection -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">Select a Story</h2>
+            <select id="storySelect" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                <option value="0">The Little Red Hen</option>
+                <!-- More stories would be added here -->
+            </select>
+        </div>
+        
+        <!-- Story Display -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-2xl font-bold mb-4 text-center" id="storyTitle">The Little Red Hen</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- English Version -->
+                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-blue-600">English Version</h3>
+                    <div id="englishText" class="text-lg leading-relaxed">
+                        <!-- Story content will be loaded here -->
+                    </div>
+                </div>
+                
+                <!-- Spanish Pronunciation -->
+                <div>
+                    <h3 class="text-xl font-semibold mb-3 text-blue-600">Pronunciación en Español</h3>
+                    <div id="pronunciationText" class="text-lg leading-relaxed">
+                        <!-- Pronunciation content will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Controls -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center space-x-4">
+                    <button id="listenBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center">
+                        <i class="fas fa-volume-up mr-2"></i> Listen
+                    </button>
+                    <button id="practiceBtn" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg flex items-center">
+                        <i class="fas fa-microphone mr-2"></i> Practice
+                    </button>
+                    <div id="recordingStatus" class="hidden items-center text-gray-600">
+                        <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse mr-2"></div>
+                        <span>Listening...</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-2">
+                    <span class="text-gray-600">Speed:</span>
+                    <select id="speedSelect" class="p-2 border border-gray-300 rounded-lg">
+                        <option value="0.7">Slow</option>
+                        <option value="1" selected>Normal</option>
+                        <option value="1.3">Fast</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="feedback" class="mt-4 hidden">
+                <div class="flex items-center">
+                    <div class="w-4 h-4 rounded-full bg-green-500 mr-2"></div>
+                    <span class="text-sm text-gray-600">Correct pronunciation</span>
+                </div>
+                <div class="flex items-center mt-1">
+                    <div class="w-4 h-4 rounded-full bg-red-500 mr-2"></div>
+                    <span class="text-sm text-gray-600">Incorrect pronunciation</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample JSON data for one story
+        const stories = [
+  {
+    id: 0,
+    title: "The Little Red Hen",
+    english: [
+      "Once upon a time, there was a little red hen who lived on a farm.",
+      "She was friends with a lazy dog, a sleepy cat, and a noisy yellow duck.",
+      "One day, the little red hen found some seeds on the ground.",
+      "She had an idea! She could plant the seeds and grow wheat.",
+      "Then she could use the wheat to make bread.",
+      "She asked her friends, 'Who will help me plant these seeds?'",
+      "'Not I,' said the lazy dog.",
+      "'Not I,' said the sleepy cat.",
+      "'Not I,' said the noisy yellow duck.",
+      "'Then I will do it myself,' said the little red hen, and she did."
+    ],
+    pronunciation: [
+      "uáns apón a táim, der uas a líttl red jen ju lívd on a farm.",
+      "shí uas frends uiz a léisi dog, a slípi cat, and a nóisi yélou dak.",
+      "uán dei, da líttl red jen fáund sam síids on da graund.",
+      "shí jad an aidía! shí cud plánt da síids and gróu uít.",
+      "den shí cud iús da uít tu meik bred.",
+      "shí askt jer frends, 'jú uíl jelp mi plánt díis síids?'",
+      "'not ái,' sed da léisi dog.",
+      "'not ái,' sed da slípi cat.",
+      "'not ái,' sed da nóisi yélou dak.",
+      "'den ái uíl du it mái-self,' sed da líttl red jen, and shí did."
+    ]
+  },
+  {
+    id: 1,
+    title: "The Brave Little Mouse",
+    english: [
+      "Once upon a time, in a small village, there lived a tiny mouse.",
+      "He was brave and loved to explore new places.",
+      "One day, he heard a loud roar coming from the forest.",
+      "It was a lion caught in a hunter’s net.",
+      "The mouse ran to help and chewed the ropes until the lion was free.",
+      "The lion thanked the mouse and they became good friends."
+    ],
+    pronunciation: [
+      "uáns apón a táim, in a smól vílej, der lívd a táini máus.",
+      "jí uas breiv and lovd tu eksplór niú pléisiz.",
+      "uán dei, jí jerd a laud rór cámin from da fórest.",
+      "it uas a láion cot in a jónters nét.",
+      "da máus ran tu jelp and chúud da róups until da láion uas frí.",
+      "da láion zánkt da máus and dei bicéim gúd frends."
+    ]
+  },
+  {
+    id: 2,
+    title: "The Kind Rabbit",
+    english: [
+      "In a sunny meadow, there lived a kind rabbit.",
+      "He always shared his food with other animals.",
+      "One winter, food was very scarce.",
+      "The rabbit gave his last carrot to a hungry deer.",
+      "The deer was so grateful that he brought the rabbit fresh apples the next day."
+    ],
+    pronunciation: [
+      "in a sóni mérou, der lívd a káind rábit.",
+      "jí ólueis shérd jis fud uiz óder ánimals.",
+      "uán uínter, fud uas véri skérs.",
+      "da rábit géiv jis last károt tu a jóngri díer.",
+      "da díer uas sóu gréitful dat jí brot da rábit fresh ápels da néxt dei."
+    ]
+  },
+  {
+    id: 3,
+    title: "The Lost Kitten",
+    english: [
+      "A little kitten was lost in the big city.",
+      "She wandered through the streets looking for her home.",
+      "A kind baker found her and gave her warm milk.",
+      "The baker put up posters until the kitten’s owner came.",
+      "The kitten was happy to be back home."
+    ],
+    pronunciation: [
+      "a líttl kíten uas lost in da big síri.",
+      "shí uánderd thru da stríts lúkin for jer jóum.",
+      "a káind béiker fáund jer and géiv jer uórm milk.",
+      "da béiker put ap pósters until da kítenz óuner kéim.",
+      "da kíten uas jápi tu bi bak jóum."
+    ]
+  },
+  {
+    id: 4,
+    title: "The Helpful Squirrel",
+    english: [
+      "In the forest, a squirrel was gathering nuts for winter.",
+      "She saw a bird with a broken wing.",
+      "The squirrel built a small nest for the bird in her tree.",
+      "The bird rested until his wing was healed.",
+      "They became best friends and helped each other."
+    ],
+    pronunciation: [
+      "in da fórest, a scuérrel uas gáderin nats for uínter.",
+      "shí sóu a berd uiz a bróuken uíng.",
+      "da scuérrel bílt a smól nést for da berd in jer trí.",
+      "da berd résted until jis uíng uas jíld.",
+      "dei bicéim best frends and jelpd ích óder."
+    ]
+  },
+  {
+    id: 5,
+    title: "The Little Blue Bird",
+    english: [
+      "A little blue bird loved to sing every morning.",
+      "One day, she lost her voice.",
+      "Her friends brought her honey and warm tea.",
+      "After a week, her voice returned, and she sang again.",
+      "The forest was filled with her beautiful songs."
+    ],
+    pronunciation: [
+      "a líttl blú berd lovd tu síng évri mórnin.",
+      "uán dei, shí lost jer vóis.",
+      "jer frends brot jer jóni and uórm tí.",
+      "áfter a uík, jer vóis ritérnd, and shí sang aguéin.",
+      "da fórest uas fíld uiz jer biútiful sóngs."
+    ]
+  },
+  {
+    id: 6,
+    title: "The Honest Woodcutter",
+    english: [
+      "A woodcutter dropped his axe into the river.",
+      "A fairy appeared and offered him a golden axe.",
+      "The woodcutter refused and said it was not his.",
+      "The fairy rewarded his honesty with the golden axe and his old one."
+    ],
+    pronunciation: [
+      "a údkorer dropt jis áx intu da ríver.",
+      "a féiri apíerd and óferd jim a gólden áx.",
+      "da údkorer rifíusd and sed it uas not jis.",
+      "da féiri riwórdéd jis ónesti uiz da gólden áx and jis óld uan."
+    ]
+  },
+  {
+    id: 7,
+    title: "The Ant and the Dove",
+    english: [
+      "An ant was drinking water from a river.",
+      "She slipped and fell into the water.",
+      "A dove dropped a leaf to help her.",
+      "Later, the ant saved the dove from a hunter."
+    ],
+    pronunciation: [
+      "an ant uas drínkin uóter from a ríver.",
+      "shí slípt and fel intu da uóter.",
+      "a dáuv dropt a líf tu jelp jer.",
+      "léiter, di ant séivd da dáuv from a jóntor."
+    ]
+  },
+  {
+    id: 8,
+    title: "The Fox and the Grapes",
+    english: [
+      "A hungry fox saw some grapes hanging from a vine.",
+      "He jumped but could not reach them.",
+      "He walked away saying, 'They are probably sour.'"
+    ],
+    pronunciation: [
+      "a jóngri foks sóu sam gréips jángin from a váin.",
+      "jí jómt bat cud not rích dem.",
+      "jí uokt awéi séyin, 'déi ar próbably sáuer.'"
+    ]
+  },
+  {
+    id: 9,
+    title: "The Wise Old Owl",
+    english: [
+      "In a quiet forest, there lived a wise old owl.",
+      "He listened more than he spoke.",
+      "The animals came to him for advice.",
+      "He taught them to be kind and patient."
+    ],
+    pronunciation: [
+      "in a kuáiet fórest, der lívd a uáis óld ául.",
+      "jí lísend mór dan jí spók.",
+      "di ánimals kéim tu jim for adváis.",
+      "jí tót dem tu bi káind and péishent."
+    ]
+  }
+];
+
+
+        // DOM elements
+        const storySelect = document.getElementById('storySelect');
+
+    // Limpiamos por si el select tiene algo
+    storySelect.innerHTML = "";
+
+    // Recorremos la lista y creamos los options
+    stories.forEach(story => {
+        const option = document.createElement("option");
+        option.value = story.id;
+        option.textContent = story.title;
+        storySelect.appendChild(option);
+    });
+        const englishTab = document.getElementById('englishTab');
+        const pronunciationTab = document.getElementById('pronunciationTab');
+        const englishContent = document.getElementById('englishContent');
+        const pronunciationContent = document.getElementById('pronunciationContent');
+        const englishText = document.getElementById('englishText');
+        const pronunciationText = document.getElementById('pronunciationText');
+        const listenBtn = document.getElementById('listenBtn');
+        const practiceBtn = document.getElementById('practiceBtn');
+        const recordingStatus = document.getElementById('recordingStatus');
+        const speedSelect = document.getElementById('speedSelect');
+        const feedback = document.getElementById('feedback');
+        const storyTitle = document.getElementById('storyTitle');
+
+        // Speech synthesis
+        const synth = window.speechSynthesis;
+        let currentUtterance = null;
+        let isListening = false;
+        let recognition;
+        let currentStory = stories[0];
+        let currentWords = [];
+        let currentPronunciationWords = [];
+        let currentWordIndex = 0;
+        let currentPronunciationIndex = 0;
+        let currentTab = 'english';
+
+        // Initialize the app
+        function init() {
+            loadStory(currentStory);
+            
+            // Set up speech recognition
+            try {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                recognition = new SpeechRecognition();
+                recognition.continuous = true;
+                recognition.maxAlternatives = 5; // más hipótesis, mejor para tokens cortos
+                recognition.interimResults = true;
+                recognition.lang = 'en-US';
+                
+                recognition.onresult = handleRecognitionResult;
+                recognition.onerror = handleRecognitionError;
+                recognition.onend = handleRecognitionEnd;
+            } catch (e) {
+                console.error("Speech recognition not supported", e);
+                practiceBtn.disabled = true;
+                practiceBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+            
+            // Event listeners
+            storySelect.addEventListener('change', handleStoryChange);
+            listenBtn.addEventListener('click', handleListen);
+            practiceBtn.addEventListener('click', handlePractice);
+            speedSelect.addEventListener('change', handleSpeedChange);
+        }
+
+        // CARGAR CUENTO (reemplaza tu loadStory por este)
+function loadStory(story) {
+  // 1) Cancela cualquier TTS en curso y resetea el botón
+  if (synth.speaking) synth.cancel();
+  listenBtn.innerHTML = '<i class="fas fa-volume-up mr-2"></i> Listen';
+  currentUtterance = null;
+
+  // 2) Setea el cuento actual
+  currentStory = story;
+  storyTitle.textContent = story.title;
+
+  // 3) Limpia contenido del DOM
+  englishText.innerHTML = '';
+  pronunciationText.innerHTML = '';
+
+  // 4) MUY IMPORTANTE: reinicia arrays e índices
+  currentWords = [];
+  currentPronunciationWords = [];
+  currentWordIndex = 0;
+  currentPronunciationIndex = 0;
+
+  // 5) Reconstruye spans de English
+  story.english.forEach(paragraph => {
+    const p = document.createElement('p');
+    p.className = 'mb-4';
+    const words = paragraph.split(/(\s+)/);
+    words.forEach(word => {
+      if (word.trim()) {
+        const span = document.createElement('span');
+        span.className = 'word';
+        span.textContent = word;
+        p.appendChild(span);
+        currentWords.push(span);
+      } else {
+        p.appendChild(document.createTextNode(word));
+      }
+    });
+    englishText.appendChild(p);
+  });
+
+  // 6) Reconstruye spans de Pronunciation
+  story.pronunciation.forEach(paragraph => {
+    const p = document.createElement('p');
+    p.className = 'mb-4';
+    const words = paragraph.split(/(\s+)/);
+    words.forEach(word => {
+      if (word.trim()) {
+        const span = document.createElement('span');
+        span.className = 'pronunciation';
+        span.textContent = word;
+        p.appendChild(span);
+        currentPronunciationWords.push(span);
+      } else {
+        p.appendChild(document.createTextNode(word));
+      }
+    });
+    pronunciationText.appendChild(p);
+  });
+
+  // 7) Deja listo el primer highlight
+  resetWordHighlights();
+}
+
+// CAMBIO DE SELECT (reemplaza tu handleStoryChange por este)
+function handleStoryChange() {
+  const selectedId = parseInt(storySelect.value, 10);
+  const selectedStory = stories.find(s => s.id === selectedId) || stories[0];
+
+  // Detén reconocimiento si estaba activo
+  if (isListening) {
+    stopListening();
+    practiceBtn.innerHTML = '<i class="fas fa-microphone mr-2"></i> Practice';
+    recordingStatus.classList.add('hidden');
+  }
+
+  // Carga el nuevo cuento (esto cancela TTS y resetea arrays)
+  loadStory(selectedStory);
+
+  // Limpia feedback y estados de práctica
+  feedback.classList.add('hidden');
+}
+
+
+
+        // Handle listen button click
+        function handleListen() {
+            if (synth.speaking) {
+                synth.cancel();
+                listenBtn.innerHTML = '<i class="fas fa-volume-up mr-2"></i> Listen';
+                return;
+            }
+            
+            const textToSpeak = currentTab === 'english' ? 
+                currentStory.english.join(' ') : 
+                currentStory.pronunciation.join(' ');
+            
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            utterance.rate = parseFloat(speedSelect.value);
+            
+            utterance.onstart = () => {
+                listenBtn.innerHTML = '<i class="fas fa-stop mr-2"></i> Stop';
+            };
+            
+            utterance.onend = () => {
+                listenBtn.innerHTML = '<i class="fas fa-volume-up mr-2"></i> Listen';
+            };
+            
+            synth.speak(utterance);
+            currentUtterance = utterance;
+        }
+
+        // Handle practice button click
+        function handlePractice() {
+            if (isListening) {
+                stopListening();
+                practiceBtn.innerHTML = '<i class="fas fa-microphone mr-2"></i> Practice';
+                recordingStatus.classList.add('hidden');
+                feedback.classList.add('hidden');
+            } else {
+                startListening();
+                practiceBtn.innerHTML = '<i class="fas fa-stop mr-2"></i> Stop';
+                recordingStatus.classList.remove('hidden');
+                feedback.classList.remove('hidden');
+            }
+        }
+
+        // Start speech recognition
+        function startListening() {
+            isListening = true;
+            partialBuffer = ""; // ← importante
+            currentWordIndex = 0;
+            currentPronunciationIndex = 0;
+            resetWordHighlights();
+            recognition.start();
+        }
+
+        // Stop speech recognition
+        function stopListening() {
+            isListening = false;
+            recognition.stop();
+        }
+
+        // Buffer para juntar resultados
+let partialBuffer = "";
+let bufferTimer;
+
+// Palabras cortas que el ASR a veces traga/omite
+const OPTIONAL_WORDS = new Set(["a","the","an","in","on","at","to","of","and"]);
+
+// Normaliza palabra (minúsculas, sin puntuación)
+function norm(w) {
+  return w.toLowerCase().replace(/[.,?!;:"'()]/g, "");
+}
+
+// Intenta consumir varias palabras habladas contra el array de spans (desde startIdx)
+function consumeMatches(spokenWords, spansArray, startIdx) {
+  let idx = startIdx;
+  let j = 0;
+
+  while (j < spokenWords.length && idx < spansArray.length) {
+    const target = norm(spansArray[idx].textContent);
+    const said   = norm(spokenWords[j]);
+
+    if (said === target) {
+      // ✅ match
+      spansArray[idx].classList.remove(
+        spansArray === currentWords ? "word-highlight" : "pronunciation-highlight",
+        spansArray === currentWords ? "word-incorrect" : "pronunciation-incorrect"
+      );
+      spansArray[idx].classList.add(
+        spansArray === currentWords ? "word-correct" : "pronunciation-correct"
+      );
+      idx++;
+      j++;
+    } else if (OPTIONAL_WORDS.has(target)) {
+      // La palabra objetivo es opcional → sáltala sin penalizar
+      idx++;
+    } else if (OPTIONAL_WORDS.has(said)) {
+      // Lo dicho es “ruido” corto → ignóralo y sigue leyendo el siguiente dicho
+      j++;
+    } else {
+      // No coincide → detente (no “consumas” más aquí)
+      break;
+    }
+  }
+
+  // Devuelve cuántas del objetivo avanzaste y cuántas palabras dichas consumiste
+  return { advanced: idx - startIdx, consumed: j };
+}
+
+// Tras avanzar índices, marca el siguiente highlight
+function setNextHighlight() {
+  if (currentWords[currentWordIndex]) {
+    currentWords[currentWordIndex].classList.add("word-highlight");
+  }
+  if (currentPronunciationWords[currentPronunciationIndex]) {
+    currentPronunciationWords[currentPronunciationIndex].classList.add("pronunciation-highlight");
+  }
+}
+
+
+        function processBufferedText(text) {
+            if (!isListening) return;
+
+            // Normaliza y separa
+            const normalized = text.trim().toLowerCase();
+            if (!normalized) return;
+
+            // Procesa con tus funciones actuales
+            checkEnglishWord(normalized);
+            checkPronunciationWord(normalized);
+
+            partialBuffer = "";
+        }
+
+        function handleRecognitionResult(event) {
+            if (!isListening) return;
+
+            const res  = event.results[event.results.length - 1];
+            const text = res[0].transcript.trim().toLowerCase();
+            if (!text) return;
+
+            if (res.isFinal) {
+                // Usa SOLO este final (evita duplicados de parciales)
+                const spokenWords = text.split(/\s+/).filter(Boolean);
+
+                // 1) English
+                if (currentWordIndex < currentWords.length) {
+                const { advanced } = consumeMatches(spokenWords, currentWords, currentWordIndex);
+                if (advanced > 0) {
+                    currentWordIndex += advanced;
+                } else {
+                    // marca actual como incorrecta si no avanzaste nada
+                    if (currentWords[currentWordIndex]) {
+                    currentWords[currentWordIndex].classList.remove("word-highlight");
+                    currentWords[currentWordIndex].classList.add("word-incorrect");
+                    }
+                }
+                }
+
+                // 2) Pronunciation — si prefieres validar SOLO inglés, comenta este bloque
+                /*
+                if (currentPronunciationIndex < currentPronunciationWords.length) {
+                const { advanced } = consumeMatches(spokenWords, currentPronunciationWords, currentPronunciationIndex);
+                if (advanced > 0) {
+                    currentPronunciationIndex += advanced;
+                } else {
+                    if (currentPronunciationWords[currentPronunciationIndex]) {
+                    currentPronunciationWords[currentPronunciationIndex].classList.remove("pronunciation-highlight");
+                    currentPronunciationWords[currentPronunciationIndex].classList.add("pronunciation-incorrect");
+                    }
+                }
+                }
+                */
+
+                // Reaplica highlight en la siguiente palabra pendiente
+                setNextHighlight();
+            } else {
+                // Guarda SOLO el último parcial (no concatenes)
+                partialBuffer = text;
+            }
+        }
+
+
+
+
+        // Check if recognized word matches current English word
+        function checkEnglishWord(recognizedText) {
+            if (currentWordIndex >= currentWords.length) return;
+            
+            const currentWord = currentWords[currentWordIndex].textContent.toLowerCase().replace(/[.,?!]/g, '');
+            const recognizedWords = recognizedText.split(/\s+/);
+            
+            for (let word of recognizedWords) {
+                if (word === currentWord) {
+                    // Correct match
+                    currentWords[currentWordIndex].classList.remove('word-highlight');
+                    currentWords[currentWordIndex].classList.add('word-correct');
+                    currentWordIndex++;
+                    
+                    // Highlight next word
+                    if (currentWordIndex < currentWords.length) {
+                        currentWords[currentWordIndex].classList.add('word-highlight');
+                    }
+                    return;
+                }
+            }
+            
+            // No match found - mark as incorrect
+            currentWords[currentWordIndex].classList.remove('word-highlight');
+            currentWords[currentWordIndex].classList.add('word-incorrect');
+        }
+
+        // Check if recognized word matches current pronunciation word
+        function checkPronunciationWord(recognizedText) {
+            if (currentPronunciationIndex >= currentPronunciationWords.length) return;
+            
+            const currentWord = currentPronunciationWords[currentPronunciationIndex].textContent.toLowerCase().replace(/[.,?!]/g, '');
+            const recognizedWords = recognizedText.split(/\s+/);
+            
+            for (let word of recognizedWords) {
+                if (word === currentWord) {
+                    // Correct match
+                    currentPronunciationWords[currentPronunciationIndex].classList.remove('pronunciation-highlight');
+                    currentPronunciationWords[currentPronunciationIndex].classList.add('pronunciation-correct');
+                    currentPronunciationIndex++;
+                    
+                    // Highlight next word
+                    if (currentPronunciationIndex < currentPronunciationWords.length) {
+                        currentPronunciationWords[currentPronunciationIndex].classList.add('pronunciation-highlight');
+                    }
+                    return;
+                }
+            }
+            
+            // No match found - mark as incorrect
+            currentPronunciationWords[currentPronunciationIndex].classList.remove('pronunciation-highlight');
+            currentPronunciationWords[currentPronunciationIndex].classList.add('pronunciation-incorrect');
+        }
+
+        // Handle recognition errors
+        function handleRecognitionError(event) {
+            console.error('Recognition error', event.error);
+            stopListening();
+            practiceBtn.innerHTML = '<i class="fas fa-microphone mr-2"></i> Practice';
+            recordingStatus.classList.add('hidden');
+        }
+
+        // Handle recognition end
+        function handleRecognitionEnd() {
+            if (isListening) {
+                recognition.start(); // Continue listening
+            }
+        }
+
+        // Handle speed change
+        function handleSpeedChange() {
+            if (synth.speaking && currentUtterance) {
+                currentUtterance.rate = parseFloat(speedSelect.value);
+            }
+        }
+
+        // Reset word highlights
+        function resetWordHighlights() {
+            currentWords.forEach(word => {
+                word.classList.remove('word-highlight', 'word-correct', 'word-incorrect');
+            });
+            
+            currentPronunciationWords.forEach(word => {
+                word.classList.remove('pronunciation-highlight', 'pronunciation-correct', 'pronunciation-incorrect');
+            });
+            
+            if (currentTab === 'english' && currentWords.length > 0) {
+                currentWords[0].classList.add('word-highlight');
+            } else if (currentPronunciationWords.length > 0) {
+                currentPronunciationWords[0].classList.add('pronunciation-highlight');
+            }
+        }
+
+        // Reset practice state
+        function resetPractice() {
+            stopListening();
+            practiceBtn.innerHTML = '<i class="fas fa-microphone mr-2"></i> Practice';
+            recordingStatus.classList.add('hidden');
+            feedback.classList.add('hidden');
+            resetWordHighlights();
+            currentWordIndex = 0;
+            currentPronunciationIndex = 0;
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+        // Tooltip reutilizable
+let tooltipDiv = null;
+function showTooltip(target, text) {
+    if (!tooltipDiv) {
+        tooltipDiv = document.createElement('div');
+        tooltipDiv.style.position = 'absolute';
+        tooltipDiv.style.background = '#fff';
+        tooltipDiv.style.border = '1px solid #3b82f6';
+        tooltipDiv.style.padding = '6px 12px';
+        tooltipDiv.style.borderRadius = '8px';
+        tooltipDiv.style.boxShadow = '0 2px 8px rgba(0,0,0,0.15)';
+        tooltipDiv.style.zIndex = '9999';
+        tooltipDiv.style.fontSize = '1rem';
+        document.body.appendChild(tooltipDiv);
+    }
+    tooltipDiv.textContent = text;
+    const rect = target.getBoundingClientRect();
+    tooltipDiv.style.top = `${rect.bottom + window.scrollY + 5}px`;
+    tooltipDiv.style.left = `${rect.left + window.scrollX}px`;
+    tooltipDiv.style.display = 'block';
+}
+
+// Oculta el tooltip al hacer clic fuera
+document.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('word') && tooltipDiv) {
+        tooltipDiv.style.display = 'none';
+    }
+});
+
+// Agrega el evento click a cada palabra después de cargar el cuento
+function addWordClickEvents() {
+    currentWords.forEach(span => {
+        span.addEventListener('click', function(e) {
+            const word = span.textContent.replace(/[.,?!;:"'()]/g, "").toLowerCase();
+            let translations = JSON.parse(localStorage.getItem('wordTranslations') || '{}');
+            let translation = translations[word];
+
+            // Si no existe traducción, pedirla y guardar
+            // if (!translation) {
+            //     translation = prompt(`Traducción para "${word}":`, "");
+            //     if (translation) {
+            //         translations[word] = translation;
+            //         localStorage.setItem('wordTranslations', JSON.stringify(translations));
+            //     } else {
+            //         translation = "Sin traducción";
+            //     }
+            // }
+
+            // Tooltip simple
+            showTooltip(span, translation);
+
+            // Voz
+            const utter = new SpeechSynthesisUtterance(span.textContent);
+            utter.rate = parseFloat(speedSelect.value);
+            synth.speak(utter);
+        });
+    });
+}
+
+// Llama a addWordClickEvents al final de loadStory
+const originalLoadStory = loadStory;
+loadStory = function(story) {
+    originalLoadStory(story);
+    addWordClickEvents();
+};
+    </script>
+</body>
+</html>
