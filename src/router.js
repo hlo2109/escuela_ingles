@@ -7,7 +7,7 @@ import Flashcards from './pages/Flashcards.vue';
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/stories', name: 'Stories', component: Stories },
-  { path: '/flashcards', name: 'Flashcards', component: Flashcards }
+  { path: '/verbs', name: 'Flashcards', component: Flashcards }
 ];
 
 const router = createRouter({

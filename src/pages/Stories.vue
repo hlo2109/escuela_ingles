@@ -7,7 +7,7 @@
       </select>
       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
         <h3 class="text-xl font-bold mb-4">{{ currentStory?.title }}</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="grid grid-cols-2 md:grid-cols-2 gap-8">
           <!-- English Version -->
           <div>
             <h4 class="text-blue-600 font-semibold mb-2">Inglés</h4>

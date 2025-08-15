@@ -6,7 +6,7 @@
         <div class="space-x-4">
           <router-link to="/" class="text-blue-500 hover:underline">Inicio</router-link>
           <router-link to="/stories" class="text-blue-500 hover:underline">Cuentos</router-link>
-          <router-link to="/flashcards" class="text-blue-500 hover:underline">Flashcards</router-link>
+          <router-link to="/verbs" class="text-blue-500 hover:underline">Verbos</router-link>
         </div>
       </div>
     </nav>
